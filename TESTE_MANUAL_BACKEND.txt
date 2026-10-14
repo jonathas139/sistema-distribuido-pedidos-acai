@@ -1,0 +1,119 @@
+ROTEIRO DE TESTE MANUAL DO BACKEND
+Sistema Distribuido de Pedidos de Acai
+
+REQUISITOS
+- Windows com PowerShell.
+- Git instalado.
+- JDK instalado (Java 8 ou superior), incluindo os comandos java e javac no PATH.
+- Para teste entre computadores: ambos na mesma rede e conexoes TCP na porta 5000 permitidas pelo Firewall do Windows.
+
+1. BAIXAR O PROJETO
+
+Abra o PowerShell na pasta onde deseja salvar o projeto e execute:
+
+git clone https://github.com/jonathas139/sistema-distribuido-pedidos-acai.git
+Set-Location .\sistema-distribuido-pedidos-acai
+
+Se o repositorio ja estiver clonado, abra o PowerShell na pasta do projeto e continue na etapa 2.
+
+2. CONFERIR O JAVA E COMPILAR
+
+Execute na pasta raiz do projeto:
+
+java -version
+javac -version
+New-Item -ItemType Directory -Path .\out -Force | Out-Null
+$fontes = Get-ChildItem -Path .\src\multithreads2 -Filter *.java | ForEach-Object FullName
+javac -encoding UTF-8 -d .\out $fontes
+
+Se a compilacao terminar sem mensagens de erro, os arquivos compilados ficarao na pasta out.
+
+3. INICIAR O SERVIDOR
+
+Abra um terminal PowerShell na pasta raiz do projeto e execute:
+
+java -cp .\out multithreads2.TCPServerAtivosMain 5000
+
+O servidor deve informar que esta rodando na porta 5000. Mantenha este terminal aberto durante o teste.
+
+4. INICIAR O CLIENTE 1
+
+Abra um segundo terminal PowerShell, entre na pasta raiz do projeto e execute:
+
+Set-Location -LiteralPath 'CAMINHO\PARA\sistema-distribuido-pedidos-acai'
+java -cp .\out multithreads2.TCPClientConsole 127.0.0.1 5000 Ana
+
+Substitua CAMINHO\PARA pelo caminho onde o repositorio foi clonado. O cliente deve mostrar a confirmacao de conexao enviada pelo servidor.
+
+5. INICIAR O CLIENTE 2
+
+Abra um terceiro terminal PowerShell, entre na mesma pasta do projeto e execute:
+
+Set-Location -LiteralPath 'CAMINHO\PARA\sistema-distribuido-pedidos-acai'
+java -cp .\out multithreads2.TCPClientConsole 127.0.0.1 5000 Bia
+
+Use um nome diferente para cada cliente.
+
+6. CONSULTAR O CATALOGO
+
+Nos terminais dos clientes, digite:
+
+CATALOGO
+
+O servidor deve responder com linhas CATALOGO_ITEM e terminar a lista com FIM_CATALOGO. O campo disponivel sera 1 quando o ingrediente principal estiver disponivel e 0 quando nao estiver.
+
+7. TESTAR PEDIDOS, ESTOQUE COMPARTILHADO E ATUALIZACOES
+
+No Cliente 1, solicite duas unidades do produto 1:
+
+PEDIR|1|2|NENHUM
+
+O servidor deve aceitar o pedido, informar o identificador e o status inicial, e enviar atualizacoes de catalogo. O produto 1 corresponde a Acai Natural 400 ml; duas unidades consomem 800 ml do estoque inicial de 1000 ml.
+
+Em seguida, no Cliente 2, envie a mesma solicitacao:
+
+PEDIR|1|2|NENHUM
+
+O segundo pedido deve ser recusado com uma resposta iniciada por:
+
+ERRO|SEM_ESTOQUE|
+
+O Cliente 1 deve receber eventos de status do seu pedido, primeiro EM_PREPARACAO e depois CONCLUIDO. O tempo simulado para o produto 1 e de 5 segundos por unidade do pedido.
+
+Para consultar o status, use no cliente que criou o pedido o identificador recebido na resposta PEDIDO_CRIADO:
+
+STATUS|ID_DO_PEDIDO
+
+Substitua ID_DO_PEDIDO pelo numero retornado pelo servidor.
+
+8. OUTROS COMANDOS E OPCIONAIS
+
+Exemplo de pedido de uma unidade do produto 0 com banana:
+
+PEDIR|0|1|BANANA
+
+Opcionais aceitos: NENHUM, BANANA, BIS e BANANA+BIS. O produto 6 (Agua Geladinha) nao aceita opcionais.
+
+Para sair de cada cliente, digite:
+
+SAIR
+
+Para encerrar o servidor, pressione Ctrl+C no terminal em que ele esta rodando.
+
+9. TESTE EM COMPUTADORES DIFERENTES
+
+Na maquina que executa o servidor, descubra o endereco IPv4 da rede local com:
+
+ipconfig
+
+Use o endereco IPv4 dessa maquina nos clientes, em vez de 127.0.0.1. Exemplo, se o IP do servidor for 192.168.0.25:
+
+java -cp .\out multithreads2.TCPClientConsole 192.168.0.25 5000 Ana
+
+Todos os computadores devem estar acessiveis pela mesma rede. Se a conexao for bloqueada, permita o Java ou a porta TCP 5000 no Firewall do Windows da maquina servidora.
+
+OBSERVACOES
+- Os dados de catalogo, pedidos e estoque ficam em memoria; reiniciar o servidor restaura o estoque inicial e apaga os pedidos da execucao anterior.
+- Cada comando PEDIR cria um pedido de um unico produto. Para pedir produtos diferentes, envie comandos separados.
+- As mensagens EVENTO_STATUS e CATALOGO_ATUALIZADO podem chegar sem uma solicitacao imediata da interface; o cliente precisa continuar lendo do socket.
+- O teste acima e manual e nao depende de interface grafica.
