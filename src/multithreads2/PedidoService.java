@@ -56,7 +56,13 @@ public class PedidoService extends Thread {
         estoque[5] = 5;
     }
 
-    /** ADAPTACAO: recebe comandos textuais e os converte em operacoes do negocio. */
+    /**
+     * ADAPTACAO: recebe comandos textuais e os converte em operacoes do negocio.
+     * As respostas sao enviadas ao cliente ainda dentro do monitor do servico,
+     * garantindo que PEDIDO_CRIADO chegue antes de qualquer EVENTO_STATUS do
+     * mesmo pedido (a thread da fila so notifica depois de liberar o monitor).
+     * A lista enviada tambem e devolvida, para o chamador inspecionar.
+     */
     public synchronized List<String> processar(String cliente,
             TCPServerConnection conexao, String mensagem) {
         List<String> respostas = new ArrayList<>();
@@ -75,6 +81,7 @@ public class PedidoService extends Thread {
         } else {
             respostas.add("ERRO|COMANDO_INVALIDO|Comando nao reconhecido");
         }
+        conexao.enviar(respostas);
         return respostas;
     }
 

@@ -26,6 +26,19 @@ Opcionais aceitos: `NENHUM`, `BANANA`, `BIS` e `BANANA+BIS`. O catalogo e o esto
 
 Respostas principais: `CONECTADO|nome`, `CATALOGO_ITEM|id|nome|preco|disponivel`, `FIM_CATALOGO`, `PEDIDO_CRIADO|id|status|previsaoSegundos`, `STATUS_PEDIDO|id|status|previsaoSegundos`, `EVENTO_STATUS|id|status` e `ERRO|codigo|mensagem`. Quando um pedido aceito altera a disponibilidade, o servidor envia `CATALOGO_ATUALIZADO`, seguido dos itens atuais e `FIM_CATALOGO`, a todos os clientes conectados.
 
+## Cliente grafico (Swing)
+
+- `ClienteAcai`: camada de protocolo sem interface. Mantem o socket persistente, a thread receptora e interpreta cada linha recebida (inclusive `EVENTO_STATUS` e `CATALOGO_ATUALIZADO`, que chegam sem comando previo). Guarda uma fila dos comandos aguardando resposta para associar `PEDIDO_CRIADO`/`ERRO` ao `PEDIR` que os originou.
+- `AcaiClienteGUI`: tela de login (servidor, porta, nome), catalogo com disponibilidade, formulario de pedido (quantidade, Banana, Bis), tabela "Meus pedidos" com status em tempo real e aba com o log bruto do protocolo. Callbacks chegam em outra thread e sao repassados com `SwingUtilities.invokeLater`.
+
+Execucao: `java -cp out multithreads2.AcaiClienteGUI [servidor] [porta] [nome]` (os tres argumentos sao opcionais e apenas preenchem a tela de login).
+
+## Ajustes no servidor para a integracao
+
+- Nome de cliente unico (sem diferenciar maiusculas): `CONECTAR` duplicado recebe `ERRO|NOME_EM_USO|...`; nome vazio ou com `|` recebe `ERRO|NOME_INVALIDO|...`. O nome e liberado quando o cliente desconecta.
+- Respostas multilinha (catalogo) sao enviadas de forma atomica (`TCPServerConnection.enviar(List)`), para que um `CATALOGO_ATUALIZADO` causado por outro cliente nao se intercale com a resposta de um `CATALOGO`.
+- `PEDIDO_CRIADO` e enviado antes de qualquer `EVENTO_STATUS` do mesmo pedido (respostas enviadas dentro do monitor de `PedidoService`).
+
 ## Execucao local
 
 Compile os arquivos Java da pasta `src` a partir da raiz do projeto. Inicie `multithreads2.TCPServerAtivosMain` e depois execute uma ou mais instancias de `multithreads2.TCPClientConsole`. O cliente usa `127.0.0.1:5000` por padrao; endereco, porta e nome podem ser passados como argumentos.

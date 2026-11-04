@@ -10,6 +10,7 @@ import java.util.List;
 public class TCPServerAtivosMain extends Thread {
 
     private final List<TCPServerConnection> clientes = new ArrayList<>();
+    private final java.util.Set<String> nomes = new java.util.HashSet<>();
     private final ServerSocket server;
     private final PedidoService pedidoService;
 
@@ -47,9 +48,23 @@ public class TCPServerAtivosMain extends Thread {
         synchronized (clientes) {
             ativos = new ArrayList<>(clientes);
         }
-        for (TCPServerConnection cliente : ativos) {
-            cliente.enviar("CATALOGO_ATUALIZADO");
-            for (String linha : pedidoService.gerarCatalogo()) cliente.enviar(linha);
+        List<String> mensagens = new ArrayList<>();
+        mensagens.add("CATALOGO_ATUALIZADO");
+        mensagens.addAll(pedidoService.gerarCatalogo());
+        // Envio atomico por cliente: nao se mistura com respostas em andamento.
+        for (TCPServerConnection cliente : ativos) cliente.enviar(mensagens);
+    }
+
+    /** ADAPTACAO: garante nomes unicos (sem diferenciar maiusculas/minusculas). */
+    public boolean registrarNome(String nome) {
+        synchronized (nomes) {
+            return nomes.add(nome.toLowerCase());
+        }
+    }
+
+    public void liberarNome(String nome) {
+        synchronized (nomes) {
+            nomes.remove(nome.toLowerCase());
         }
     }
 
