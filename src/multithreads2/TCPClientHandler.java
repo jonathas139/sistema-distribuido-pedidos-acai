@@ -74,7 +74,8 @@ public class TCPClientHandler extends Thread {
                 String nome = tokens.nextToken();
                 String preco = tokens.nextToken();
                 String disponivel = tokens.nextToken();
-                catalogo.add(new String[]{id, nome, preco, disponivel});
+                String quantidade = tokens.nextToken();
+                catalogo.add(new String[]{id, nome, preco, disponivel, quantidade});
             } else if (tipo.equals("FIM_CATALOGO")) {
                 caller.atualizarCatalogo(catalogo, atualizacao);
                 catalogo = new ArrayList<String[]>();

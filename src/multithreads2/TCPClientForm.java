@@ -100,7 +100,7 @@ public class TCPClientForm extends javax.swing.JFrame {
         jLabel3.setText("Catálogo:");
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-                new Object[]{"Id", "Produto", "Preço", "Disponibilidade"}, 0) {
+                new Object[]{"Id", "Produto", "Preço", "Estoque", "Disponibilidade"}, 0) {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -108,6 +108,7 @@ public class TCPClientForm extends javax.swing.JFrame {
         jTable1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jTable1.getColumnModel().getColumn(0).setMaxWidth(50);
         jTable1.getColumnModel().getColumn(2).setMaxWidth(100);
+        jTable1.getColumnModel().getColumn(3).setMaxWidth(120);
         jTable1.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 if (!evt.getValueIsAdjusting()) {
@@ -435,7 +436,7 @@ public class TCPClientForm extends javax.swing.JFrame {
                 for (int i = 0; i < itens.size(); i++) {
                     String[] item = itens.get(i);
                     modeloCatalogo().addRow(new Object[]{item[0], item[1],
-                        "R$ " + item[2].replace('.', ','),
+                        "R$ " + item[2].replace('.', ','), item[4],
                         item[3].equals("1") ? "Disponível" : "Esgotado"});
                     if (item[0].equals(idSelecionado)) {
                         novaLinha = i;

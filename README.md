@@ -24,7 +24,7 @@ Cada mensagem termina com nova linha; os campos usam `|` como separador. O clien
 
 Opcionais aceitos: `NENHUM`, `BANANA`, `BIS` e `BANANA+BIS`. O catalogo e o estoque sao carregados em memoria ao iniciar o servidor. Cada pedido contem um produto; pedidos com mais produtos podem ser enviados como pedidos separados.
 
-Respostas principais: `CONECTADO|nome`, `CATALOGO_ITEM|id|nome|preco|disponivel`, `FIM_CATALOGO`, `PEDIDO_CRIADO|id|status|previsaoSegundos`, `STATUS_PEDIDO|id|status|previsaoSegundos`, `EVENTO_STATUS|id|status` e `ERRO|codigo|mensagem`. Quando um pedido aceito altera a disponibilidade, o servidor envia `CATALOGO_ATUALIZADO`, seguido dos itens atuais e `FIM_CATALOGO`, a todos os clientes conectados.
+Respostas principais: `CONECTADO|nome`, `CATALOGO_ITEM|id|nome|preco|disponivel|quantidadeDisponivel`, `FIM_CATALOGO`, `PEDIDO_CRIADO|id|status|previsaoSegundos`, `STATUS_PEDIDO|id|status|previsaoSegundos`, `EVENTO_STATUS|id|status` e `ERRO|codigo|mensagem`. Quando um pedido aceito altera a disponibilidade, o servidor envia `CATALOGO_ATUALIZADO`, seguido dos itens atuais e `FIM_CATALOGO`, a todos os clientes conectados.
 
 ## Cliente grafico (Swing)
 

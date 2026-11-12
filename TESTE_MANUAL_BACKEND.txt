@@ -62,7 +62,7 @@ Nos terminais dos clientes, digite:
 
 CATALOGO
 
-O servidor deve responder com linhas CATALOGO_ITEM e terminar a lista com FIM_CATALOGO. O campo disponivel sera 1 quando o ingrediente principal estiver disponivel e 0 quando nao estiver.
+O servidor deve responder com linhas CATALOGO_ITEM e terminar a lista com FIM_CATALOGO. O campo disponivel sera 1 quando o ingrediente principal estiver disponivel e 0 quando nao estiver. O ultimo campo (quantidadeDisponivel) informa quantas unidades do produto ainda podem ser pedidas; produtos do mesmo ingrediente compartilham o estoque (ex.: com 5000 ml, o produto 0 mostra 25 e o produto 1 mostra 12).
 
 7. TESTAR PEDIDOS, ESTOQUE COMPARTILHADO E ATUALIZACOES
 

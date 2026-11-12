@@ -70,8 +70,7 @@ public class PedidoService extends Thread {
 
         if ("CATALOGO".equals(campos[0])) {
             for (Produto produto : catalogo) {
-                respostas.add("CATALOGO_ITEM|" + produto.id + "|" + produto.nome
-                        + "|" + produto.preco + "|" + (disponivel(produto) ? "1" : "0"));
+                respostas.add(linhaCatalogo(produto));
             }
             respostas.add("FIM_CATALOGO");
         } else if ("PEDIR".equals(campos[0])) {
@@ -89,8 +88,7 @@ public class PedidoService extends Thread {
     public synchronized List<String> gerarCatalogo() {
         List<String> respostas = new ArrayList<>();
         for (Produto produto : catalogo) {
-            respostas.add("CATALOGO_ITEM|" + produto.id + "|" + produto.nome
-                    + "|" + produto.preco + "|" + (disponivel(produto) ? "1" : "0"));
+            respostas.add(linhaCatalogo(produto));
         }
         respostas.add("FIM_CATALOGO");
         return respostas;
@@ -179,6 +177,21 @@ public class PedidoService extends Thread {
             if (produto.id.equals(id)) return produto;
         }
         return null;
+    }
+
+    /** CATALOGO_ITEM|id|nome|preco|disponivel|quantidadeDisponivel */
+    private String linhaCatalogo(Produto produto) {
+        return "CATALOGO_ITEM|" + produto.id + "|" + produto.nome + "|" + produto.preco
+                + "|" + (disponivel(produto) ? "1" : "0") + "|" + quantidadeDisponivel(produto);
+    }
+
+    /**
+     * Unidades do produto que ainda podem ser pedidas (estoque do ingrediente
+     * dividido pelo consumo de uma unidade). Produtos do mesmo ingrediente
+     * compartilham o estoque: 5000 ml rendem 25 de 200 ml ou 12 de 400 ml.
+     */
+    private int quantidadeDisponivel(Produto produto) {
+        return estoque[indiceIngrediente(produto.ingrediente)] / produto.quantidadeBase;
     }
 
     private boolean disponivel(Produto produto) {
