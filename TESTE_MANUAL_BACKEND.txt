@@ -24,9 +24,11 @@ java -version
 javac -version
 New-Item -ItemType Directory -Path .\out -Force | Out-Null
 $fontes = Get-ChildItem -Path .\src\multithreads2 -Filter *.java | ForEach-Object FullName
-javac -encoding UTF-8 -d .\out $fontes
+javac --release 8 -encoding UTF-8 -d .\out $fontes
 
-Se a compilacao terminar sem mensagens de erro, os arquivos compilados ficarao na pasta out.
+Se a compilacao terminar sem mensagens de erro, os arquivos compilados ficarao na pasta out. (Um aviso "source value 8 is obsolete" e normal.)
+
+Por que --release 8: se o javac for mais novo que o java usado para executar (ex.: javac 21 e java 8), ocorre UnsupportedClassVersionError. Esta opcao gera classes que rodam em qualquer Java 8 ou superior. Ela exige javac 9 ou mais novo; com javac 8, use o comando sem --release 8.
 
 3. INICIAR O SERVIDOR
 
@@ -60,19 +62,19 @@ Nos terminais dos clientes, digite:
 
 CATALOGO
 
-O servidor deve responder com linhas CATALOGO_ITEM e terminar a lista com FIM_CATALOGO. O campo disponivel sera 1 quando o ingrediente principal estiver disponivel e 0 quando nao estiver.
+O servidor deve responder com linhas CATALOGO_ITEM e terminar a lista com FIM_CATALOGO. O campo disponivel sera 1 quando o ingrediente principal estiver disponivel e 0 quando nao estiver. O ultimo campo (quantidadeDisponivel) informa quantas unidades do produto ainda podem ser pedidas; produtos do mesmo ingrediente compartilham o estoque (ex.: com 5000 ml, o produto 0 mostra 25 e o produto 1 mostra 12).
 
 7. TESTAR PEDIDOS, ESTOQUE COMPARTILHADO E ATUALIZACOES
 
-No Cliente 1, solicite duas unidades do produto 1:
+No Cliente 1, solicite sete unidades do produto 1:
 
-PEDIR|1|2|NENHUM
+PEDIR|1|7|NENHUM
 
-O servidor deve aceitar o pedido, informar o identificador e o status inicial, e enviar atualizacoes de catalogo. O produto 1 corresponde a Acai Natural 400 ml; duas unidades consomem 800 ml do estoque inicial de 1000 ml.
+O servidor deve aceitar o pedido, informar o identificador e o status inicial, e enviar atualizacoes de catalogo. O produto 1 corresponde a Acai Natural 400 ml; sete unidades consomem 2800 ml do estoque inicial de 5000 ml.
 
 Em seguida, no Cliente 2, envie a mesma solicitacao:
 
-PEDIR|1|2|NENHUM
+PEDIR|1|7|NENHUM
 
 O segundo pedido deve ser recusado com uma resposta iniciada por:
 
@@ -111,6 +113,15 @@ Use o endereco IPv4 dessa maquina nos clientes, em vez de 127.0.0.1. Exemplo, se
 java -cp .\out multithreads2.TCPClientConsole 192.168.0.25 5000 Ana
 
 Todos os computadores devem estar acessiveis pela mesma rede. Se a conexao for bloqueada, permita o Java ou a porta TCP 5000 no Firewall do Windows da maquina servidora.
+
+10. TESTAR O CLIENTE GRAFICO
+
+Com o servidor em execucao, abra um terminal por cliente e execute:
+
+java -cp .\out multithreads2.TCPClientForm
+java -cp .\out multithreads2.TCPClientForm
+
+Em cada janela, confira Server (127.0.0.1) e Porta (5000), digite um nome diferente (ex.: Ana e Bia) e clique em Conectar. Selecione um produto no catalogo, escolha quantidade e opcionais e clique em Fazer pedido. Verifique: (a) o pedido aparece em "Meus pedidos" e muda de Aguardando para Em preparacao e Concluido sem nenhuma acao; (b) o catalogo da outra janela e atualizado sozinho quando um produto esgota; (c) tentar conectar com um nome ja em uso mostra uma janela de erro e a conexao e desfeita; (d) o campo "Resposta" mostra as mensagens recebidas do servidor.
 
 OBSERVACOES
 - Os dados de catalogo, pedidos e estoque ficam em memoria; reiniciar o servidor restaura o estoque inicial e apaga os pedidos da execucao anterior.

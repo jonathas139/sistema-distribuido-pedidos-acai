@@ -48,15 +48,21 @@ public class PedidoService extends Thread {
         catalogo.add(new Produto("6", "Agua Geladinha", "3.00", "agua", 1, 0));
 
         // indices: natural, guarana, zero em ml; banana, bis e agua em unidades.
-        estoque[0] = 1000;
-        estoque[1] = 1000;
-        estoque[2] = 1000;
-        estoque[3] = 5;
-        estoque[4] = 5;
-        estoque[5] = 5;
+        estoque[0] = 5000;
+        estoque[1] = 5000;
+        estoque[2] = 5000;
+        estoque[3] = 20;
+        estoque[4] = 20;
+        estoque[5] = 20;
     }
 
-    /** ADAPTACAO: recebe comandos textuais e os converte em operacoes do negocio. */
+    /**
+     * ADAPTACAO: recebe comandos textuais e os converte em operacoes do negocio.
+     * As respostas sao enviadas ao cliente ainda dentro do monitor do servico,
+     * garantindo que PEDIDO_CRIADO chegue antes de qualquer EVENTO_STATUS do
+     * mesmo pedido (a thread da fila so notifica depois de liberar o monitor).
+     * A lista enviada tambem e devolvida, para o chamador inspecionar.
+     */
     public synchronized List<String> processar(String cliente,
             TCPServerConnection conexao, String mensagem) {
         List<String> respostas = new ArrayList<>();
@@ -64,8 +70,7 @@ public class PedidoService extends Thread {
 
         if ("CATALOGO".equals(campos[0])) {
             for (Produto produto : catalogo) {
-                respostas.add("CATALOGO_ITEM|" + produto.id + "|" + produto.nome
-                        + "|" + produto.preco + "|" + (disponivel(produto) ? "1" : "0"));
+                respostas.add(linhaCatalogo(produto));
             }
             respostas.add("FIM_CATALOGO");
         } else if ("PEDIR".equals(campos[0])) {
@@ -75,6 +80,7 @@ public class PedidoService extends Thread {
         } else {
             respostas.add("ERRO|COMANDO_INVALIDO|Comando nao reconhecido");
         }
+        conexao.enviar(respostas);
         return respostas;
     }
 
@@ -82,8 +88,7 @@ public class PedidoService extends Thread {
     public synchronized List<String> gerarCatalogo() {
         List<String> respostas = new ArrayList<>();
         for (Produto produto : catalogo) {
-            respostas.add("CATALOGO_ITEM|" + produto.id + "|" + produto.nome
-                    + "|" + produto.preco + "|" + (disponivel(produto) ? "1" : "0"));
+            respostas.add(linhaCatalogo(produto));
         }
         respostas.add("FIM_CATALOGO");
         return respostas;
@@ -172,6 +177,21 @@ public class PedidoService extends Thread {
             if (produto.id.equals(id)) return produto;
         }
         return null;
+    }
+
+    /** CATALOGO_ITEM|id|nome|preco|disponivel|quantidadeDisponivel */
+    private String linhaCatalogo(Produto produto) {
+        return "CATALOGO_ITEM|" + produto.id + "|" + produto.nome + "|" + produto.preco
+                + "|" + (disponivel(produto) ? "1" : "0") + "|" + quantidadeDisponivel(produto);
+    }
+
+    /**
+     * Unidades do produto que ainda podem ser pedidas (estoque do ingrediente
+     * dividido pelo consumo de uma unidade). Produtos do mesmo ingrediente
+     * compartilham o estoque: 5000 ml rendem 25 de 200 ml ou 12 de 400 ml.
+     */
+    private int quantidadeDisponivel(Produto produto) {
+        return estoque[indiceIngrediente(produto.ingrediente)] / produto.quantidadeBase;
     }
 
     private boolean disponivel(Produto produto) {

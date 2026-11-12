@@ -24,8 +24,16 @@ public class TCPServerAtivosHandler extends Thread {
                 if (mensagem.equals("SAIR")) break;
                 if (nomeCliente == null) {
                     if (mensagem.startsWith("CONECTAR|") && mensagem.length() > 9) {
-                        nomeCliente = mensagem.substring(9).trim();
-                        cliente.enviar("CONECTADO|" + nomeCliente);
+                        String nome = mensagem.substring(9).trim();
+                        if (nome.isEmpty() || nome.contains("|")) {
+                            cliente.enviar("ERRO|NOME_INVALIDO|Nome vazio ou com o caractere |");
+                        } else if (!servidor.registrarNome(nome)) {
+                            // ADAPTACAO: cada cliente precisa de um identificador unico.
+                            cliente.enviar("ERRO|NOME_EM_USO|Ja existe um cliente conectado com este nome");
+                        } else {
+                            nomeCliente = nome;
+                            cliente.enviar("CONECTADO|" + nomeCliente);
+                        }
                     } else {
                         cliente.enviar("ERRO|NAO_CONECTADO|Envie CONECTAR|nome antes dos comandos");
                     }
@@ -34,9 +42,9 @@ public class TCPServerAtivosHandler extends Thread {
 
                 // ADAPTACAO: o exemplo retransmitia mensagens; agora encaminha para as regras do pedido.
                 boolean pedidoCriado = false;
+                // processar() ja envia as respostas ao cliente (ver PedidoService).
                 for (String resposta : servidor.getPedidoService()
                         .processar(nomeCliente, cliente, mensagem)) {
-                    cliente.enviar(resposta);
                     if (resposta.startsWith("PEDIDO_CRIADO|")) pedidoCriado = true;
                 }
                 if (pedidoCriado) servidor.notificarCatalogoAtualizado();
@@ -45,6 +53,7 @@ public class TCPServerAtivosHandler extends Thread {
             System.out.println("Conexao encerrada: " + ex.getMessage());
         } finally {
             servidor.removerCliente(cliente);
+            if (nomeCliente != null) servidor.liberarNome(nomeCliente);
         }
     }
 }

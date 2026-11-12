@@ -40,6 +40,16 @@ public class TCPServerConnection {
         output.flush();
     }
 
+    /**
+     * ADAPTACAO: envia varias linhas de forma atomica. Assim, uma resposta
+     * multilinha (ex.: CATALOGO_ITEM... FIM_CATALOGO) nunca e intercalada com
+     * mensagens assincronas enviadas por outras threads.
+     */
+    public synchronized void enviar(java.util.List<String> mensagens) {
+        for (String message : mensagens) output.println(message);
+        output.flush();
+    }
+
     public void fechar() {
         try {
             input.close();
