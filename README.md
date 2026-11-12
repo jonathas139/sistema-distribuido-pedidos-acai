@@ -2,7 +2,7 @@
 
 ## Base usada
 
-O servidor foi montado a partir do exemplo Java multithreaded da Aula 6. Foram mantidos o `ServerSocket`, o ciclo de `accept()` e a criacao de uma thread por conexao. O cliente de console usa uma thread receptora, seguindo o exemplo de cliente multithreaded.
+O servidor foi montado a partir do exemplo Java multithreaded da Aula 6. Foram mantidos o `ServerSocket`, o ciclo de `accept()` e a criacao de uma thread por conexao. O cliente de console e o cliente grafico usam uma thread receptora, seguindo o exemplo de cliente multithreaded.
 
 ## Adaptacoes comentadas no codigo
 
@@ -28,10 +28,13 @@ Respostas principais: `CONECTADO|nome`, `CATALOGO_ITEM|id|nome|preco|disponivel`
 
 ## Cliente grafico (Swing)
 
-- `ClienteAcai`: camada de protocolo sem interface. Mantem o socket persistente, a thread receptora e interpreta cada linha recebida (inclusive `EVENTO_STATUS` e `CATALOGO_ATUALIZADO`, que chegam sem comando previo). Guarda uma fila dos comandos aguardando resposta para associar `PEDIDO_CRIADO`/`ERRO` ao `PEDIR` que os originou.
-- `AcaiClienteGUI`: tela de login (servidor, porta, nome), catalogo com disponibilidade, formulario de pedido (quantidade, Banana, Bis), tabela "Meus pedidos" com status em tempo real e aba com o log bruto do protocolo. Callbacks chegam em outra thread e sao repassados com `SwingUtilities.invokeLater`.
+O cliente segue as tres classes do exemplo `multithreads2` da Aula 6:
 
-Execucao: `java -cp out multithreads2.AcaiClienteGUI [servidor] [porta] [nome]` (os tres argumentos sao opcionais e apenas preenchem a tela de login).
+- `TCPClientForm`: a tela (Server, Porta, Nome, Conectar/Desconectar), com catalogo, quantidade, Banana, Bis, tabela "Meus pedidos" e o campo "Resposta". Cria o `TCPClientMain` ao conectar e envia comandos com `writeMessage()`. Guarda a fila dos comandos aguardando resposta para associar `PEDIDO_CRIADO`/`ERRO` ao comando que os originou.
+- `TCPClientMain`: socket e `PrintWriter`, com `writeMessage()` e `closeConnection()`; inicia o handler.
+- `TCPClientHandler`: thread que le as linhas do servidor, separa os campos com `StringTokenizer` e chama o formulario (`escreverMensagem`, `conectado`, `atualizarCatalogo`, `pedidoCriado`, `statusPedido`, `eventoStatus`, `erro`). O formulario repassa cada chamada com `SwingUtilities.invokeLater`.
+
+Execucao: `java -cp out multithreads2.TCPClientForm`.
 
 ## Ajustes no servidor para a integracao
 

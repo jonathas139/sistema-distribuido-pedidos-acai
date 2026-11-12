@@ -48,12 +48,12 @@ public class PedidoService extends Thread {
         catalogo.add(new Produto("6", "Agua Geladinha", "3.00", "agua", 1, 0));
 
         // indices: natural, guarana, zero em ml; banana, bis e agua em unidades.
-        estoque[0] = 1000;
-        estoque[1] = 1000;
-        estoque[2] = 1000;
-        estoque[3] = 5;
-        estoque[4] = 5;
-        estoque[5] = 5;
+        estoque[0] = 5000;
+        estoque[1] = 5000;
+        estoque[2] = 5000;
+        estoque[3] = 20;
+        estoque[4] = 20;
+        estoque[5] = 20;
     }
 
     /**

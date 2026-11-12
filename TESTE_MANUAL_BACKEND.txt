@@ -66,15 +66,15 @@ O servidor deve responder com linhas CATALOGO_ITEM e terminar a lista com FIM_CA
 
 7. TESTAR PEDIDOS, ESTOQUE COMPARTILHADO E ATUALIZACOES
 
-No Cliente 1, solicite duas unidades do produto 1:
+No Cliente 1, solicite sete unidades do produto 1:
 
-PEDIR|1|2|NENHUM
+PEDIR|1|7|NENHUM
 
-O servidor deve aceitar o pedido, informar o identificador e o status inicial, e enviar atualizacoes de catalogo. O produto 1 corresponde a Acai Natural 400 ml; duas unidades consomem 800 ml do estoque inicial de 1000 ml.
+O servidor deve aceitar o pedido, informar o identificador e o status inicial, e enviar atualizacoes de catalogo. O produto 1 corresponde a Acai Natural 400 ml; sete unidades consomem 2800 ml do estoque inicial de 5000 ml.
 
 Em seguida, no Cliente 2, envie a mesma solicitacao:
 
-PEDIR|1|2|NENHUM
+PEDIR|1|7|NENHUM
 
 O segundo pedido deve ser recusado com uma resposta iniciada por:
 
@@ -118,10 +118,10 @@ Todos os computadores devem estar acessiveis pela mesma rede. Se a conexao for b
 
 Com o servidor em execucao, abra um terminal por cliente e execute:
 
-java -cp .\out multithreads2.AcaiClienteGUI 127.0.0.1 5000 Ana
-java -cp .\out multithreads2.AcaiClienteGUI 127.0.0.1 5000 Bia
+java -cp .\out multithreads2.TCPClientForm
+java -cp .\out multithreads2.TCPClientForm
 
-Clique em Conectar. Selecione um produto no catalogo, escolha quantidade e opcionais e clique em Fazer pedido. Verifique: (a) o pedido aparece em "Meus pedidos" e muda de Aguardando para Em preparacao e Concluido sem nenhuma acao; (b) o catalogo da outra janela e atualizado sozinho quando um produto esgota; (c) tentar conectar com um nome ja em uso mostra a mensagem de erro na tela de login; (d) a aba "Log do protocolo" mostra as mensagens trocadas.
+Em cada janela, confira Server (127.0.0.1) e Porta (5000), digite um nome diferente (ex.: Ana e Bia) e clique em Conectar. Selecione um produto no catalogo, escolha quantidade e opcionais e clique em Fazer pedido. Verifique: (a) o pedido aparece em "Meus pedidos" e muda de Aguardando para Em preparacao e Concluido sem nenhuma acao; (b) o catalogo da outra janela e atualizado sozinho quando um produto esgota; (c) tentar conectar com um nome ja em uso mostra uma janela de erro e a conexao e desfeita; (d) o campo "Resposta" mostra as mensagens recebidas do servidor.
 
 OBSERVACOES
 - Os dados de catalogo, pedidos e estoque ficam em memoria; reiniciar o servidor restaura o estoque inicial e apaga os pedidos da execucao anterior.
